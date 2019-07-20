@@ -145,7 +145,7 @@ $ sudo service apache2 reload
 
 ## Authenticate user using Google sign-in 
 1. Go to google domains to create a new records for domain wwww.maotze.com pointing it at ip address 18.207.115.119
-   a. Type https://domains.google.com/m/registrar/maotze.com/dns in browser
+   a. Go to https://domains.google.com/m/registrar/maotze.com/dns
    b. Scroll down to "Custom resource records"
    c. Add the following line
    Name    Type   TTL     data
@@ -194,7 +194,6 @@ c. update client secrets file path to /var/www/catalog/catalog/client_secret.jso
 d. fix SQLALCHEMY_TRACK_MODIFICATIONS warning --> app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 e. fix SQLAlchemy configuration warning --> app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////var/www/catalog/catalog/gearswithusers.db'
 
-
 ## Future Plans
 None
 
@@ -203,3 +202,11 @@ None
 
 ## License
 This is free and unencumbered software released into the public domain
+
+## Logging into linux ubuntu server 
+The following Private SSH clients keys are added to GitHub 
+1. Private key in (.pem) format
+LightsailDefaultKey-us-east-1.pem
+
+2. PuTTY private key in (.ppk) format 
+LightsailDefaultKey-us-east-1.ppk
