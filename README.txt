@@ -4,7 +4,7 @@ Project2:Project:Linux Server Configuration
 Take a baseline installation of a Linux distribution on a virtual machine and prepare it to host a web applications, 
 to include installing updates, securing it from a number of attack vectors and installing/configuring web and 
 database servers.
-Public IP: 18.207.2115.119
+Public IP: 18.207.115.119  --> After a stop/start cycle, a new public IP is assigned (34.224.30.133)
 HTTP port: 80 (default)
 SSH port: 2200
 Application URL: http://www.maotze.com or http://www.maotze.com/catalog
@@ -59,8 +59,8 @@ $ sudo apt-get install apache2
 $ sudo apt-get install libapache2-mod-wsgi python-dev
 4. Enable mod_wsgi
 $ sudo a2enmod wsgi
-5. Restart Apache 
-$ sudo service apache2 reload
+5. Start Apache 
+$ sudo service apache2 start
 
 ## Installation
 1. Clone catalog web application from Github:
@@ -144,17 +144,17 @@ $ sudo python lotsofitems.py
 $ sudo service apache2 reload
 
 ## Authenticate user using Google sign-in 
-1. Go to google domains to create a new records for domain wwww.maotze.com pointing it at ip address 18.207.115.119
+1. Go to google domains to create a new record for domain wwww.maotze.com pointing it at ip address 18.207.115.119
    a. Go to https://domains.google.com/m/registrar/maotze.com/dns
    b. Scroll down to "Custom resource records"
    c. Add the following line
    Name    Type   TTL     data
    www     A      1h      18.207.115.119
 
-2. Go to the Google API Console to create a client ID and client secret 
+2. Go to the Google API Console to create a client ID and client secret
    a. Add http://18.207.115.119 and http://www.maotze.com as authorized JavaScript origins
    b. Add http://www.maotze.com/login, http://www.maotze.com/gconnect and http://www.maotze.com as as authorized redirect URI
-   c. Download JSON file and copy contents to /var/www/catalog/catalog/client_secret.json
+   c. Download JSON file and copy contents to /var/www/catalog/catalog/client_secrets.json
    d. Replace client id in /var/www/catalog/catalog/templates/login.html
 
 ## Usage  
@@ -210,3 +210,58 @@ LightsailDefaultKey-us-east-1.pem
 
 2. PuTTY private key in (.ppk) format 
 LightsailDefaultKey-us-east-1.ppk
+
+## 2 Fixes from review dated Sat 7/20/2019
+I Only allow connections for SSH (port 2200), HTTP (port 80), and NTP (port 123)
+1. Remove port 8080 connection from outside of network (internet)
+    a. Go to  Lightsail console (https://lightsail.aws.amazon.com/)
+    b. Click the Networking tab of Ubuntu-proj3 instance's management page 
+    c. Choose "Edit rules" to remove rule for8080
+    d. Click "Save" button
+    e. Click "Stop" button and then "Start" to reboot the server
+
+2. Due to a stop/start cycle, new public IP is assigned. We need to update domain in google domains
+    a. Go to google domains 
+    b. Update record for domain wwww.maotze.com pointing it at new ip address (34.224.30.133)
+
+3. Remove port 8080 connection from inside of network (intranet)
+    a. Run the folloing command on linux server 
+    $ sudo ufw deny 8080
+    Note: Confirmed that the port 8080 is closed
+    $ sudo ufw status
+    Status: active
+
+    To                         Action      From
+    --                         ------      ----
+    2200/tcp                   ALLOW       Anywhere
+    80/tcp                     ALLOW       Anywhere
+    123/udp                    ALLOW       Anywhere
+    Apache                     ALLOW       Anywhere
+    8080/tcp                   ALLOW       Anywhere
+    8080                       DENY        Anywhere
+    2200/tcp (v6)              ALLOW       Anywhere (v6)
+    80/tcp (v6)                ALLOW       Anywhere (v6)
+    123/udp (v6)               ALLOW       Anywhere (v6)
+    Apache (v6)                ALLOW       Anywhere (v6)
+    8080/tcp (v6)              ALLOW       Anywhere (v6)
+    8080 (v6)                  DENY        Anywhere (v6)
+  
+    b. Update catalog.conf with www.maotze.com
+    $ cd /etc/apache2/sites-available
+    $ sudo vim catalog.conf
+    <VirtualHost *:80>
+        ServerName www.maotze.com
+        ServerAdmin admin@www.maotze.com
+        .....
+
+4. Update client secret configuration
+    a. Go to the Google API Console (https://console.developers.google.com/apis/credentials?project=new-linux-server-config)
+    b. Remove http://18.207.115.119 from authorized JavaScript origins
+    c. Download JSON file and copy contents to /var/www/catalog/catalog/client_secrets.json
+
+5. Start Apache 
+$ sudo service apache2 start
+
+II. All system packages have been updated to most recent versions
+1. Run the following command to install packages
+    $ sudo apt-get update && sudo apt-get dist-upgrade
